@@ -1,8 +1,0 @@
-/media/samsung/projects/Dual_FLIR_cpp_multi-stage/camera-driver/build/CMakeFiles/camera_driver.dir
-/media/samsung/projects/Dual_FLIR_cpp_multi-stage/camera-driver/build/CMakeFiles/camera_test.dir
-/media/samsung/projects/Dual_FLIR_cpp_multi-stage/camera-driver/build/CMakeFiles/edit_cache.dir
-/media/samsung/projects/Dual_FLIR_cpp_multi-stage/camera-driver/build/CMakeFiles/rebuild_cache.dir
-/media/samsung/projects/Dual_FLIR_cpp_multi-stage/camera-driver/build/CMakeFiles/list_install_components.dir
-/media/samsung/projects/Dual_FLIR_cpp_multi-stage/camera-driver/build/CMakeFiles/install.dir
-/media/samsung/projects/Dual_FLIR_cpp_multi-stage/camera-driver/build/CMakeFiles/install/local.dir
-/media/samsung/projects/Dual_FLIR_cpp_multi-stage/camera-driver/build/CMakeFiles/install/strip.dir

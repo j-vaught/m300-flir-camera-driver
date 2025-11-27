@@ -1,2 +1,0 @@
-/usr/bin/ar qc libcamera_driver.a CMakeFiles/camera_driver.dir/src/CameraFrameCapture.cpp.o
-/usr/bin/ranlib libcamera_driver.a
