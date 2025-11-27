@@ -3,14 +3,39 @@
 #include <thread>
 #include <chrono>
 #include <iomanip>
+#include <string>
+#include <cstring>
 
-int main() {
+int main(int argc, char* argv[]) {
     std::cout << "=== FLIR M364C Frame Capture Test ===" << std::endl;
     std::cout << std::endl;
 
+    // Parse stream selection (default: vis.0)
+    int streamNum = 0;
+    if (argc > 1) {
+        if (std::strcmp(argv[1], "0") == 0) {
+            streamNum = 0;
+        } else if (std::strcmp(argv[1], "1") == 0) {
+            streamNum = 1;
+        } else {
+            std::cerr << "Usage: " << argv[0] << " [0|1]" << std::endl;
+            std::cerr << "  0 = vis.0 (1920x1080 H.264)" << std::endl;
+            std::cerr << "  1 = vis.1 (1280x720 MJPEG)" << std::endl;
+            return 1;
+        }
+    }
+
     // Create camera capture instance
-    // Using vis.0 stream: 1920x1080 H.264
-    std::string rtspUrl = "rtsp://169.254.50.183:8554/vis.0";
+    std::string rtspUrl;
+    std::string streamDesc;
+    if (streamNum == 0) {
+        rtspUrl = "rtsp://169.254.50.183:8554/vis.0";
+        streamDesc = "vis.0 (1920x1080 H.264)";
+    } else {
+        rtspUrl = "rtsp://169.254.50.183:8554/vis.1";
+        streamDesc = "vis.1 (1280x720 MJPEG)";
+    }
+
     std::string outputFolder = "/media/samsung/projects/Dual_FLIR_cpp_multi-stage/camera-driver/output";
     int numWriteThreads = 4;
     int jpegQuality = 85;
@@ -44,6 +69,7 @@ int main() {
 
     // Start capture
     std::cout << "Starting capture..." << std::endl;
+    std::cout << "Stream: " << streamDesc << std::endl;
     std::cout << "RTSP URL: " << rtspUrl << std::endl;
     std::cout << "Output folder: " << outputFolder << std::endl;
     std::cout << "Write threads: " << numWriteThreads << std::endl;
