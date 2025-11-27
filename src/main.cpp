@@ -10,16 +10,25 @@ int main(int argc, char* argv[]) {
     std::cout << "=== FLIR M364C Frame Capture Test ===" << std::endl;
     std::cout << std::endl;
 
-    // Parse stream selection (default: vis.0)
-    int streamNum = 0;
-    if (argc > 1) {
-        if (std::strcmp(argv[1], "0") == 0) {
-            streamNum = 0;
-        } else if (std::strcmp(argv[1], "1") == 0) {
-            streamNum = 1;
+    // Parse arguments (camera IP and stream selection)
+    std::string cameraIp = "169.254.50.183";  // default: Visible1
+    int streamNum = 0;                         // default: vis.0
+
+    for (int i = 1; i < argc; ++i) {
+        std::string arg = argv[i];
+        if (arg == "0" || arg == "1") {
+            streamNum = std::stoi(arg);
+        } else if (arg == "169.254.50.183" || arg == "169.254.80.109") {
+            cameraIp = arg;
         } else {
-            std::cerr << "Usage: " << argv[0] << " [0|1]" << std::endl;
-            std::cerr << "  0 = vis.0 (1920x1080 H.264)" << std::endl;
+            std::cerr << "Usage: " << argv[0] << " [camera_ip] [stream]" << std::endl;
+            std::cerr << std::endl;
+            std::cerr << "Camera IPs:" << std::endl;
+            std::cerr << "  169.254.50.183  = Visible1 (default)" << std::endl;
+            std::cerr << "  169.254.80.109  = Visible2" << std::endl;
+            std::cerr << std::endl;
+            std::cerr << "Streams:" << std::endl;
+            std::cerr << "  0 = vis.0 (1920x1080 H.264) (default)" << std::endl;
             std::cerr << "  1 = vis.1 (1280x720 MJPEG)" << std::endl;
             return 1;
         }
@@ -28,11 +37,19 @@ int main(int argc, char* argv[]) {
     // Create camera capture instance
     std::string rtspUrl;
     std::string streamDesc;
+    std::string cameraDesc;
+
+    if (cameraIp == "169.254.50.183") {
+        cameraDesc = "Visible1";
+    } else if (cameraIp == "169.254.80.109") {
+        cameraDesc = "Visible2";
+    }
+
     if (streamNum == 0) {
-        rtspUrl = "rtsp://169.254.50.183:8554/vis.0";
+        rtspUrl = "rtsp://" + cameraIp + ":8554/vis.0";
         streamDesc = "vis.0 (1920x1080 H.264)";
     } else {
-        rtspUrl = "rtsp://169.254.50.183:8554/vis.1";
+        rtspUrl = "rtsp://" + cameraIp + ":8554/vis.1";
         streamDesc = "vis.1 (1280x720 MJPEG)";
     }
 
@@ -69,6 +86,7 @@ int main(int argc, char* argv[]) {
 
     // Start capture
     std::cout << "Starting capture..." << std::endl;
+    std::cout << "Camera: " << cameraDesc << std::endl;
     std::cout << "Stream: " << streamDesc << std::endl;
     std::cout << "RTSP URL: " << rtspUrl << std::endl;
     std::cout << "Output folder: " << outputFolder << std::endl;

@@ -7,6 +7,7 @@
 #include <chrono>
 #include <ctime>
 #include <cstring>
+#include <cstdio>
 #include <filesystem>
 #include <sstream>
 #include <iomanip>
@@ -29,7 +30,7 @@ struct Frame {
     int width;
     int height;
     uint64_t frameNumber;
-    uint64_t computerTimeMs;      // Computer receive time in milliseconds
+    uint64_t computerTimeMs;      // Computer receive time in milliseconds (when frame decoded)
     uint64_t hardwareTimeNs;      // Hardware timestamp in nanoseconds
     bool hwTimeValid;             // True if hardware time is from PTS, false if fallback
 };
@@ -465,7 +466,10 @@ void CameraFrameCapture::writeThreadFunc() {
                     << std::setw(2) << timeinfo->tm_sec << "."
                     << std::setw(3) << milliseconds;
 
-            // Generate filename: {YYYY.MM.DD_HH.MM.SS.mmm}_{HW or ERR}_{hardwareTimeNs}.jpg
+            // Measure encode + write time
+            auto encodeStartTime = std::chrono::high_resolution_clock::now();
+
+            // Generate temporary filename for encoding
             std::ostringstream oss;
             oss << outputFolder_ << "/"
                 << timeStr.str() << "_";
@@ -476,10 +480,30 @@ void CameraFrameCapture::writeThreadFunc() {
                 oss << "ERR_" << frame.hardwareTimeNs;
             }
 
-            oss << ".jpg";
+            std::string tempFilepath = oss.str() + ".jpg";
 
             // Encode and write JPEG
-            encodeFrameToJPEG(frame, jpegQuality_, oss.str());
+            encodeFrameToJPEG(frame, jpegQuality_, tempFilepath);
+
+            auto encodeEndTime = std::chrono::high_resolution_clock::now();
+            uint64_t encodeTimeMs = std::chrono::duration_cast<std::chrono::milliseconds>(
+                encodeEndTime - encodeStartTime).count();
+
+            // Rename file to include encoding time
+            std::ostringstream finalOss;
+            finalOss << outputFolder_ << "/"
+                     << timeStr.str() << "_";
+
+            if (frame.hwTimeValid) {
+                finalOss << "HW_" << frame.hardwareTimeNs;
+            } else {
+                finalOss << "ERR_" << frame.hardwareTimeNs;
+            }
+
+            finalOss << "_" << encodeTimeMs << "ms.jpg";
+
+            std::rename(tempFilepath.c_str(), finalOss.str().c_str());
+
             writtenFrames_.fetch_add(1);
             localWriteCounter++;
         }
