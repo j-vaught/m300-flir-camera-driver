@@ -10,48 +10,35 @@ int main(int argc, char* argv[]) {
     std::cout << "=== FLIR M364C Frame Capture Test ===" << std::endl;
     std::cout << std::endl;
 
-    // Parse arguments (camera IP and stream selection)
-    std::string cameraIp = "169.254.50.183";  // default: Visible1
-    int streamNum = 0;                         // default: vis.0
-
-    for (int i = 1; i < argc; ++i) {
-        std::string arg = argv[i];
-        if (arg == "0" || arg == "1") {
-            streamNum = std::stoi(arg);
-        } else if (arg == "169.254.50.183" || arg == "169.254.80.109") {
-            cameraIp = arg;
-        } else {
-            std::cerr << "Usage: " << argv[0] << " [camera_ip] [stream]" << std::endl;
-            std::cerr << std::endl;
-            std::cerr << "Camera IPs:" << std::endl;
-            std::cerr << "  169.254.50.183  = Visible1 (default)" << std::endl;
-            std::cerr << "  169.254.80.109  = Visible2" << std::endl;
-            std::cerr << std::endl;
-            std::cerr << "Streams:" << std::endl;
-            std::cerr << "  0 = vis.0 (1920x1080 H.264) (default)" << std::endl;
-            std::cerr << "  1 = vis.1 (1280x720 MJPEG)" << std::endl;
-            return 1;
-        }
+    // Parse required arguments
+    if (argc != 4) {
+        std::cerr << "Usage: " << argv[0] << " <camera_ip> <stream_name> <port>" << std::endl;
+        std::cerr << std::endl;
+        std::cerr << "Examples:" << std::endl;
+        std::cerr << "  " << argv[0] << " 169.254.50.183 vis.0 8554   # Visible1, vis.0, port 8554" << std::endl;
+        std::cerr << "  " << argv[0] << " 169.254.80.109 vis.0 8554   # Visible2, vis.0, port 8554" << std::endl;
+        std::cerr << "  " << argv[0] << " 169.254.50.183 vis.1 8554   # Visible1, vis.1, port 8554" << std::endl;
+        std::cerr << "  " << argv[0] << " 192.168.1.100 custom_stream 9000  # Custom IP/stream/port" << std::endl;
+        return 1;
     }
 
-    // Create camera capture instance
-    std::string rtspUrl;
-    std::string streamDesc;
-    std::string cameraDesc;
+    std::string cameraIp = argv[1];
+    std::string streamName = argv[2];
+    int port = std::stoi(argv[3]);
 
+    // Determine camera description
+    std::string cameraDesc;
     if (cameraIp == "169.254.50.183") {
         cameraDesc = "Visible1";
     } else if (cameraIp == "169.254.80.109") {
         cameraDesc = "Visible2";
+    } else {
+        cameraDesc = cameraIp;
     }
 
-    if (streamNum == 0) {
-        rtspUrl = "rtsp://" + cameraIp + ":8554/vis.0";
-        streamDesc = "vis.0 (1920x1080 H.264)";
-    } else {
-        rtspUrl = "rtsp://" + cameraIp + ":8554/vis.1";
-        streamDesc = "vis.1 (1280x720 MJPEG)";
-    }
+    // Build RTSP URL
+    std::string rtspUrl = "rtsp://" + cameraIp + ":" + std::to_string(port) + "/" + streamName;
+    std::string streamDesc = streamName;
 
     std::string outputFolder = "/media/samsung/projects/Dual_FLIR_cpp_multi-stage/camera-driver/output";
     int numWriteThreads = 4;
