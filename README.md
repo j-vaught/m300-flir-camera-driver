@@ -1,6 +1,6 @@
 # Camera Stream Driver
 
-A high-performance C++ driver for capturing RTSP video streams from FLIR M300 thermal cameras and saving frames as JPEG files with precise timestamp metadata.
+A C++ driver for capturing RTSP video streams from FLIR M300 series cameras and saving frames as JPEG files with precise timestamp metadata.
 
 ## Features
 
@@ -14,10 +14,10 @@ A high-performance C++ driver for capturing RTSP video streams from FLIR M300 th
 
 ## Hardware Tested
 
-- **FLIR M364C** (Visible1): `169.254.50.183`
+- **FLIR M300 series** (Visible1): `169.254.50.183`
   - vis.0: 1920x1080 H.264 stream
   - vis.1: 1280x720 MJPEG stream
-- **FLIR M364C** (Visible2): `169.254.80.109`
+- **FLIR M300 series** (Visible2): `169.254.80.109`
   - vis.0: 1920x1080 H.264 stream
   - vis.1: 1280x720 MJPEG stream
 
@@ -82,7 +82,7 @@ Executable: `build/camera_test`
 
 **Custom camera/stream/port:**
 ```bash
-./build/camera_test 192.168.1.100 thermal_stream 9000
+./build/camera_test 192.168.1.100 therm 9000
 ```
 
 ## Filename Format
@@ -96,14 +96,15 @@ YYYY.MM.DD_HH.MM.SS.mmm_HW_hwTimeNs_latencyMs.jpg
 Example:
 ```
 2025.11.27_09.22.48.803_HW_700000000_18ms.jpg
-│          │  │  │ │  │  │  │          │  │
-│          │  │  │ │  │  │  │          │  └─ Encoding latency (milliseconds)
-│          │  │  │ │  │  │  └──────────────── Hardware time from camera (nanoseconds)
-└──────────┴──┴──┴─┴──┴──┴───────────────────── Computer receive time (YYYY.MM.DD_HH.MM.SS.mmm)
+│    │  │  │  │  │  |   │  │         │
+│    │  │  │  │  │  │   │  |         └──────── Encoding latency (milliseconds)
+│    │  │  │  │  │  │   |  └────────────────── Hardware time from camera (nanoseconds)
+│    │  │  │  │  │  |   └───────────────────── Error/success code
+└────┴──┴──┴──┴──┴──┴───────────────────────── Computer receive time (YYYY.MM.DD_HH.MM.SS.mmm)
 ```
 
 - **YYYY.MM.DD_HH.MM.SS.mmm** - When frame was received by driver (system time)
-- **HW** - Hardware timestamp present (from camera stream PTS)
+- **HW** - Hardware timestamp present (from camera stream PTS) -- otherwise ERR for error
 - **hwTimeNs** - Camera stream timestamp in nanoseconds
 - **latencyMs** - JPEG encode + write time in milliseconds
 
@@ -243,12 +244,3 @@ struct FrameStats {
 - Reduce write thread workload
 - Use SSD for output directory
 - Reduce JPEG quality
-
-## License
-
-See repository LICENSE file.
-
-## Documentation
-
-- **Latency Analysis** - See `/docs/latency_analysis.png` for detailed encoding latency histograms
-- **API Header** - See `include/CameraFrameCapture.hpp` for complete interface documentation
